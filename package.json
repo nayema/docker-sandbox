@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/nayema/docker-sandbox/issues"
   },
-  "homepage": "https://github.com/nayema/docker-sandbox#readme"
+  "homepage": "https://github.com/nayema/docker-sandbox#readme",
+  "dependencies": {
+    "request": "^2.88.0"
+  }
 }
