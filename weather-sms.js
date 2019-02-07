@@ -45,7 +45,7 @@ request(accuWeather12HourForecastRequestURL, (error, response, body) => {
 
     client.messages
       .create({
-        body: `Weather conditions for the next 12 hours: ${forecastedConditions.join('\n')}`,
+        body: `Weather conditions for the next 12 hours:\n${forecastedConditions.join('\n')}`,
         from: process.env.TWILIO_NUMBER,
         to: process.argv[2]
       })
