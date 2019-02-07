@@ -25,13 +25,15 @@ request(accuWeather12HourForecastRequestURL, (error, response, body) => {
   if (!error && response.statusCode === 200) {
     const conditions = JSON.parse(body)
 
+    let forecastedConditions = []
     conditions.map(condition => {
         const hourlyRealFeel = condition['RealFeelTemperature']['Value']
         const hourlyIconPhrase = condition['IconPhrase']
 
-        console.log('Hourly Forecast: ' + hourlyIconPhrase, hourlyRealFeel)
+        forecastedConditions.push('Hourly Forecast: ' + hourlyIconPhrase, hourlyRealFeel)
       }
     )
+    console.log(forecastedConditions.join(', '))
   }
 })
 
