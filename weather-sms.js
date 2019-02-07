@@ -37,8 +37,8 @@ request(accuWeather12HourForecastRequestURL, (error, response, body) => {
     conditions.map(condition => {
         const hourlyRealFeel = condition['RealFeelTemperature']['Value']
         const hourlyIconPhrase = condition['IconPhrase']
-        const hourlyForecast = `${hourlyIconPhrase} ${hourlyRealFeel}°C`
 
+        const hourlyForecast = `${hourlyIconPhrase} ${hourlyRealFeel}°C`
         forecastedConditions.push(hourlyForecast)
       }
     )
