@@ -28,13 +28,13 @@ request(currentConditionsRequestURL, (error, response, body) => {
     console.log(message)
 
     client.messages
-    .create({
-      body: message,
-      from: process.env.TWILIO_NUMBER,
-      to: process.argv[2]
-    })
-    .then(message => console.log(message.sid))
-    .done();
+      .create({
+        body: message,
+        from: process.env.TWILIO_NUMBER,
+        to: process.argv[2]
+      })
+      .then(message => console.log(message.sid))
+      .done()
   }
 })
 
