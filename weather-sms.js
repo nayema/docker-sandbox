@@ -6,6 +6,12 @@
     + process.env.ACCUWEATHER_API
     + '&details=true'
 
+  const eveningForecastRequestURL =
+    'http://dataservice.accuweather.com/forecasts/v1/hourly/12hour/55488?apikey='
+    + process.env.ACCUWEATHER_API
+    + '&details=true'
+    + '&metric=true'
+
   const dailyForecastRequestURL =
     'http://dataservice.accuweather.com/forecasts/v1/daily/1day/55488?apikey='
     + process.env.ACCUWEATHER_API
@@ -14,31 +20,27 @@
 
   const currentConditions = await getJson(currentConditionsRequestURL)
   const dailyForecast = await getJson(dailyForecastRequestURL)
-  const message = _printForecastMessage(currentConditions, dailyForecast)
+  const eveningForecast = await getJson(eveningForecastRequestURL)
+  const message = _printForecastMessage(currentConditions, dailyForecast, eveningForecast)
 
   _sendTextMessage(message)
 })()
 
-const _printForecastMessage = (currentConditions, dailyForecast) => {
+const _printForecastMessage = (currentConditions, dailyForecast, eveningForecast) => {
   const realFeel = currentConditions[0]['RealFeelTemperature']['Metric']['Value']
   const weatherText = currentConditions[0]['WeatherText']
 
-  const minTemp = dailyForecast['DailyForecasts'][0]['RealFeelTemperature']['Minimum']['Value']
-  const maxTemp = dailyForecast['DailyForecasts'][0]['RealFeelTemperature']['Maximum']['Value']
-  const dayPhrase = dailyForecast['DailyForecasts'][0]['Day']['LongPhrase']
-  const daySnowProbability = dailyForecast['DailyForecasts'][0]['Day']['SnowProbability']
   const dayRainProbability = dailyForecast['DailyForecasts'][0]['Day']['RainProbability']
-  const nightPhrase = dailyForecast['DailyForecasts'][0]['Night']['LongPhrase']
-  const nightSnowProbability = dailyForecast['DailyForecasts'][0]['Night']['SnowProbability']
   const nightRainProbability = dailyForecast['DailyForecasts'][0]['Night']['RainProbability']
 
+  const realFeelIn9Hours = eveningForecast[8]['RealFeelTemperature']['Value']
+  const weatherTextIn9Hours = eveningForecast[8]['IconPhrase']
+
   return `
-    \n It is ${realFeel}°C and ${weatherText} outside!
-    \nToday's forecast:
-    \nhighest: ${maxTemp}°C
-    \nlowest: ${minTemp}°C
-    \n${dayPhrase} with snow probability of ${daySnowProbability}% and rain probability of ${dayRainProbability}%.
-    \n${nightPhrase} with snow probability of ${nightSnowProbability}% and rain probability of ${nightRainProbability}%.
+    \n---
+    \nIt is ${realFeel}°C and ${weatherText} right now.
+    \nIt will be ${realFeelIn9Hours}°C and ${weatherTextIn9Hours} on your way home this evening.
+    \nThere is a rain probability of ${(dayRainProbability + nightRainProbability) / 2}% today.
     `
 }
 
