@@ -1,5 +1,5 @@
-const request = require('request')
 const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+const getJson = require('./get-json')
 
 const currentConditionsRequestURL =
   'http://dataservice.accuweather.com/currentconditions/v1/55488?apikey='
@@ -13,38 +13,34 @@ const dailyForecastRequestURL =
   + '&metric=true'
 
 let message = ''
-request(currentConditionsRequestURL, (error, response, body) => {
-  if (!error && response.statusCode === 200) {
-    const conditions = JSON.parse(body)
-    const realFeel = conditions[0]['RealFeelTemperature']['Metric']['Value']
-    const weatherText = conditions[0]['WeatherText']
+
+getJson(currentConditionsRequestURL)
+  .then(currentConditions => {
+    const realFeel = currentConditions[0]['RealFeelTemperature']['Metric']['Value']
+    const weatherText = currentConditions[0]['WeatherText']
 
     message += `It is ${realFeel}°C and ${weatherText} outside!`
 
-    request(dailyForecastRequestURL, (error, response, body) => {
-      if (!error && response.statusCode === 200) {
-        const conditions = JSON.parse(body)
+    getJson(dailyForecastRequestURL)
+      .then(dailyForecast => {
+        const minTemp = dailyForecast['DailyForecasts'][0]['RealFeelTemperature']['Minimum']['Value']
+        const maxTemp = dailyForecast['DailyForecasts'][0]['RealFeelTemperature']['Maximum']['Value']
 
-        const minTemp = conditions['DailyForecasts'][0]['RealFeelTemperature']['Minimum']['Value']
-        const maxTemp = conditions['DailyForecasts'][0]['RealFeelTemperature']['Maximum']['Value']
+        const dayPhrase = dailyForecast['DailyForecasts'][0]['Day']['LongPhrase']
+        const daySnowProbability = dailyForecast['DailyForecasts'][0]['Day']['SnowProbability']
+        const dayRainProbability = dailyForecast['DailyForecasts'][0]['Day']['RainProbability']
 
-        const dayPhrase = conditions['DailyForecasts'][0]['Day']['LongPhrase']
-        const daySnowProbability = conditions['DailyForecasts'][0]['Day']['SnowProbability']
-        const dayRainProbability = conditions['DailyForecasts'][0]['Day']['RainProbability']
-
-        const nightPhrase = conditions['DailyForecasts'][0]['Night']['LongPhrase']
-        const nightSnowProbability = conditions['DailyForecasts'][0]['Night']['SnowProbability']
-        const nightRainProbability = conditions['DailyForecasts'][0]['Night']['RainProbability']
+        const nightPhrase = dailyForecast['DailyForecasts'][0]['Night']['LongPhrase']
+        const nightSnowProbability = dailyForecast['DailyForecasts'][0]['Night']['SnowProbability']
+        const nightRainProbability = dailyForecast['DailyForecasts'][0]['Night']['RainProbability']
 
         message += `
-            \nToday's forecast:
-            \nhighest: ${maxTemp}°C
-            \nlowest: ${minTemp}°C
-            \n${dayPhrase} with snow probability of ${daySnowProbability}% and rain probability of ${dayRainProbability}%.
-            \n${nightPhrase} with snow probability of ${nightSnowProbability}% and rain probability of ${nightRainProbability}%.
-             `
-
-        console.log(message)
+        \nToday's forecast:
+        \nhighest: ${maxTemp}°C
+        \nlowest: ${minTemp}°C
+        \n${dayPhrase} with snow probability of ${daySnowProbability}% and rain probability of ${dayRainProbability}%.
+        \n${nightPhrase} with snow probability of ${nightSnowProbability}% and rain probability of ${nightRainProbability}%.
+        `
 
         client.messages
           .create({
@@ -54,7 +50,5 @@ request(currentConditionsRequestURL, (error, response, body) => {
           })
           .then(message => console.log(message.sid))
           .done()
-      }
-    })
-  }
-})
+      })
+  })
